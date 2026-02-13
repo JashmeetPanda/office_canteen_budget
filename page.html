@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCS Canteen Budget Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 15px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .header img {
+      width: 130px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    p {
+      text-align: center;
+      margin: 5px 0;
+      font-size: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 12px;
+      display: block;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      border-radius: 15px;
+      border: 1px solid #ccc;
+      font-size: 17px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .monthlyBtn {
+      background: green;
+    }
+
+    .monthlyBtn:hover {
+      background: darkgreen;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #f7f7f7;
+    }
+
+    .report {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 15px;
+      display: none;
+    }
+
+    .danger {
+      color: red;
+      font-weight: bold;
+    }
+
+    .safe {
+      color: green;
+      font-weight: bold;
+    }
+
+    .resetBtn {
+      background: red;
+      margin-top: 15px;
+    }
+
+    .resetBtn:hover {
+      background: darkred;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER WITH TCS LOGO -->
+  <div class="header">
+    
+    <h2>Canteen Budget Tracker</h2>
+  </div>
+
+  <p><b>Weekly Budget:</b> ₹750</p>
+  <p><b>Monthly Budget (4 Weeks):</b> ₹3000</p>
+
+  <!-- WEEK SELECT -->
+  <label>Select Week:</label>
+  <select id="week">
+    <option value="Week1">Week 1</option>
+    <option value="Week2">Week 2</option>
+    <option value="Week3">Week 3</option>
+    <option value="Week4">Week 4</option>
+  </select>
+
+  <!-- DAY SELECT -->
+  <label>Select Day:</label>
+  <select id="day">
+    <option>Monday</option>
+    <option>Tuesday</option>
+    <option>Wednesday</option>
+    <option>Thursday</option>
+    <option>Friday</option>
+  </select>
+
+  <!-- AMOUNT INPUT -->
+  <label>Enter Amount Spent (₹):</label>
+  <input type="number" id="spent" placeholder="Example: 200">
+
+  <!-- SAVE BUTTON -->
+  <button onclick="saveSpending()">Save Spending</button>
+
+  <!-- WEEKLY TABLE -->
+  <h3 style="text-align:center; margin-top:20px;">📅 Weekly Record</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>Spent (₹)</th>
+      </tr>
+    </thead>
+    <tbody id="weekData"></tbody>
+  </table>
+
+  <!-- MONTHLY REPORT BUTTON -->
+  <button class="monthlyBtn" onclick="toggleMonthlyReport()">
+    📊 Show Monthly Record
+  </button>
+
+  <!-- MONTHLY REPORT BOX -->
+  <div class="report" id="monthlyReport"></div>
+
+  <!-- RESET BUTTON -->
+  <button class="resetBtn" onclick="resetMonth()">
+    Reset Full Month
+  </button>
+
+</div>
+
+<script>
+  const monthlyBudget = 3000;
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const weeks = ["Week1", "Week2", "Week3", "Week4"];
+
+  // Load data when app opens
+  window.onload = function () {
+    displayWeek();
+    displayMonthlyReport();
+  };
+
+  // Save Spending
+  function saveSpending() {
+    let week = document.getElementById("week").value;
+    let day = document.getElementById("day").value;
+    let spent = Number(document.getElementById("spent").value);
+
+    if (spent <= 0) {
+      alert("Please enter a valid amount!");
+      return;
+    }
+
+    let monthData = JSON.parse(localStorage.getItem("canteenMonth")) || {};
+
+    if (!monthData[week]) {
+      monthData[week] = {};
+    }
+
+    monthData[week][day] = spent;
+
+    localStorage.setItem("canteenMonth", JSON.stringify(monthData));
+
+    document.getElementById("spent").value = "";
+
+    displayWeek();
+    displayMonthlyReport();
+  }
+
+  // Display Weekly Data
+  function displayWeek() {
+    let week = document.getElementById("week").value;
+    let monthData = JSON.parse(localStorage.getItem("canteenMonth")) || {};
+    let weekInfo = monthData[week] || {};
+
+    let table = "";
+
+    days.forEach(day => {
+      let spent = weekInfo[day] || 0;
+      table += `<tr><td>${day}</td><td>${spent}</td></tr>`;
+    });
+
+    document.getElementById("weekData").innerHTML = table;
+  }
+
+  // Monthly Report Calculation
+  function displayMonthlyReport() {
+    let monthData = JSON.parse(localStorage.getItem("canteenMonth")) || {};
+
+    let monthlyTotal = 0;
+    let reportHTML = "<h3>📊 Monthly Report</h3>";
+
+    weeks.forEach(week => {
+      let weekSpent = 0;
+
+      if (monthData[week]) {
+        for (let day in monthData[week]) {
+          weekSpent += monthData[week][day];
+        }
+      }
+
+      monthlyTotal += weekSpent;
+      reportHTML += `<p><b>${week} Total:</b> ₹${weekSpent}</p>`;
+    });
+
+    let remaining = monthlyBudget - monthlyTotal;
+
+    reportHTML += `
+      <hr>
+      <p><b>Total Spent This Month:</b> ₹${monthlyTotal}</p>
+      <p><b>Remaining Monthly Budget:</b> ₹${remaining}</p>
+      ${
+        remaining < 0
+          ? `<p class="danger">⚠ Budget Exceeded!</p>`
+          : `<p class="safe">✅ Budget Safe</p>`
+      }
+    `;
+
+    document.getElementById("monthlyReport").innerHTML = reportHTML;
+  }
+
+  // Toggle Monthly Report
+  function toggleMonthlyReport() {
+    let reportBox = document.getElementById("monthlyReport");
+
+    if (reportBox.style.display === "none") {
+      reportBox.style.display = "block";
+    } else {
+      reportBox.style.display = "none";
+    }
+  }
+
+  // Change week updates table
+  document.getElementById("week").addEventListener("change", displayWeek);
+
+  // Reset Full Month
+  function resetMonth() {
+    if (confirm("Are you sure you want to reset full month data?")) {
+      localStorage.removeItem("canteenMonth");
+      displayWeek();
+      displayMonthlyReport();
+      document.getElementById("monthlyReport").style.display = "none";
+    }
+  }
+</script>
+
+</body>
+</html>
