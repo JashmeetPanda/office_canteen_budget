@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen · Budget Tracker</title>
+  <!-- Font Awesome 6 (same clean icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 30%, #1a2f3f, #0b1725);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* main glass card — exactly same dark aesthetic */
+    .card-elevated {
+      width: 100%;
+      max-width: 460px;
+      background: rgba(20, 30, 38, 0.75);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border-radius: 2.5rem;
+      padding: 2rem 1.8rem;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+      color: #edf2f7;
+    }
+
+    /* header area with accent */
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+    .title-section i {
+      font-size: 2rem;
+      background: linear-gradient(145deg, #9ad0ff, #4a9eff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    h2 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #c0e0ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .chip-budget {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 40px;
+      padding: 0.5rem 1rem;
+      margin: 0.8rem 0 1.5rem 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
+    }
+    .chip-budget span {
+      background: #1e3b4f;
+      padding: 0.3rem 0.9rem;
+      border-radius: 30px;
+      color: #a6e0ff;
+      font-weight: 600;
+    }
+
+    /* labelled fields */
+    .field {
+      margin-bottom: 1.2rem;
+    }
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #b3cdff;
+      margin-bottom: 0.4rem;
+    }
+    .field label i {
+      font-size: 1rem;
+      width: 20px;
+      color: #6cb2ff;
+    }
+
+    /* custom selects & input (exact same) */
+    .custom-select, .custom-input {
+      width: 100%;
+      padding: 0.9rem 1.4rem;
+      background: rgba(10, 20, 30, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      font-size: 1rem;
+      color: white;
+      outline: none;
+      transition: 0.2s;
+      appearance: none;
+      cursor: pointer;
+    }
+    .custom-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a0c0ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.2rem center;
+      background-size: 1.2rem;
+    }
+    .custom-select option {
+      background: #0e1e2b;
+      color: #eee;
+    }
+    .custom-input:focus, .custom-select:focus {
+      border-color: #4a9eff;
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3);
+    }
+    /* amount input */
+    .amount-wrapper {
+      position: relative;
+    }
+    .amount-wrapper i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7aa9ff;
+      font-size: 1.1rem;
+    }
+    .custom-input[type="number"] {
+      padding-left: 2.8rem;
+    }
+
+    /* primary button */
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, #2b7fff, #1f5fd9);
+      border: none;
+      padding: 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 1.2rem 0 1.8rem 0;
+      box-shadow: 0 10px 20px -5px #0044aa80;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-primary:hover {
+      transform: scale(1.02);
+      background: linear-gradient(135deg, #3f8aff, #2a6be0);
+      box-shadow: 0 15px 25px -5px #1f4eb0;
+    }
+
+    /* modern table */
+    .table-container {
+      background: rgba(0, 15, 30, 0.5);
+      border-radius: 28px;
+      padding: 0.2rem 0;
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 1.8rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 0.8rem 0.8rem 1.5rem;
+      color: #90b8ff;
+    }
+    td {
+      padding: 0.7rem 0.8rem 0.7rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-weight: 400;
+    }
+    td:last-child, th:last-child {
+      text-align: right;
+      padding-right: 1.8rem;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* weekly summary card (exact same design, we'll keep it) */
+    .balance-card {
+      background: linear-gradient(145deg, #11212e, #0a1822);
+      border-radius: 28px;
+      padding: 1.5rem;
+      margin: 1.2rem 0 1.5rem 0;
+      border: 1px solid #2e4b6e;
+      box-shadow: inset 0 1px 3px #ffffff0d;
+    }
+    .balance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.2rem;
+    }
+    .badge {
+      background: #19465c;
+      border-radius: 50px;
+      padding: 0.3rem 1rem;
+      font-size: 0.9rem;
+      color: #b9dcff;
+    }
+    .status-safe {
+      color: #a3ffb4;
+      background: rgba(0, 200, 100, 0.18);
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      border: 1px solid #29c76a50;
+    }
+    .status-danger {
+      color: #ffa6a6;
+      background: rgba(255, 70, 70, 0.18);
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      border: 1px solid #ff656550;
+    }
+
+    /* 🌟 NEW progress bar — blended into dark theme, placed right after table but before summary */
+    .progress-wrapper {
+      margin: 1.2rem 0 0.5rem 0;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #b3d0ff;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .progress-bg {
+      background: #1c3343;
+      height: 22px;
+      border-radius: 40px;
+      overflow: hidden;
+      border: 1px solid #3a5b78;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2b7fff, #63b0ff);
+      border-radius: 40px;
+      transition: width 0.2s ease;
+      box-shadow: 0 0 6px #4a9eff;
+    }
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #b0ceff;
+    }
+
+    /* action group (unchanged) */
+    .action-group {
+      display: flex;
+      gap: 0.8rem;
+      margin: 1.5rem 0 0.8rem;
+    }
+    .btn-outline {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      padding: 0.9rem 0;
+      border-radius: 40px;
+      font-weight: 600;
+      color: #d2e5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: #5f9eff;
+    }
+    .btn-danger {
+      background: rgba(200, 70, 70, 0.25);
+      border: 1.5px solid #b54a4a;
+      color: #ffbaba;
+    }
+    .btn-danger:hover {
+      background: rgba(200, 70, 70, 0.45);
+      border-color: #ff6f6f;
+    }
+
+    /* monthly panel (unchanged) */
+    .monthly-panel {
+      background: #0d1c27e0;
+      border-radius: 28px;
+      padding: 1.2rem 1.5rem;
+      margin-top: 1rem;
+      border: 1px solid #3b5777;
+      display: none;
+    }
+    .monthly-panel.show {
+      display: block;
+    }
+    .month-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed #2f4f6b;
+    }
+    .month-total {
+      font-weight: 700;
+      background: #0e293b;
+      padding: 0.8rem 1.2rem;
+      border-radius: 30px;
+      margin-top: 0.8rem;
+      text-align: center;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+    i { font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="card-elevated">
+    <!-- header (exact same) -->
+    <div class="title-section">
+      <i class="fas fa-utensils"></i>
+      <h2>Canteen Budget Tracker</h2>
+    </div>
+    <div class="chip-budget">
+      <i class="fas fa-wallet"></i> weekly ₹750 · monthly ₹3000
+      <span><i class="far fa-clock"></i> 5 days</span>
+    </div>
+
+    <!-- week selector -->
+    <div class="field">
+      <label><i class="far fa-calendar-alt"></i> week</label>
+      <select id="week" class="custom-select">
+        <option value="Week1">Week 1 · Mon–Fri</option>
+        <option value="Week2">Week 2</option>
+        <option value="Week3">Week 3</option>
+        <option value="Week4">Week 4</option>
+      </select>
+    </div>
+
+    <!-- day + amount inline grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+      <div class="field" style="margin-bottom: 0;">
+        <label><i class="fas fa-sun"></i> day</label>
+        <select id="day" class="custom-select">
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom: 0;">
+        <label><i class="fas fa-coins"></i> amount</label>
+        <div class="amount-wrapper">
+          <i class="fas fa-rupee-sign"></i>
+          <input type="number" id="spent" class="custom-input" placeholder="0" min="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- save spending button -->
+    <button class="btn-primary" onclick="saveSpending()">
+      <i class="fas fa-plus-circle"></i> Add entry
+    </button>
+
+    <!-- weekly spending table -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+      <span style="font-weight: 500;"><i class="fas fa-table"></i> this week</span>
+      <span style="font-size: 0.8rem; background: #253b4b; padding: 0.2rem 1rem; border-radius: 30px;">
+        <i class="far fa-clock"></i> last 5 days
+      </span>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Day</th><th>Spent (₹)</th></tr>
+        </thead>
+        <tbody id="weekData"></tbody>
+      </table>
+    </div>
+
+    <!-- 🌟 NEW progress bar (blended, no edit) -->
+    <div class="progress-wrapper">
+      <div class="progress-label">
+        <span><i class="fas fa-chart-line"></i> week used</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="weekProgressFill" style="width: 0%;"></div>
+      </div>
+      <div class="progress-stats">
+        <span id="progressSpent">₹0 spent</span>
+        <span id="progressRemaining">₹750 left</span>
+      </div>
+    </div>
+
+    <!-- weekly summary card (exact same) -->
+    <div class="balance-card" id="weeklySummary"></div>
+
+    <!-- action group (monthly + reset) -->
+    <div class="action-group">
+      <button class="btn-outline" onclick="toggleMonthlyReport()">
+        <i class="fas fa-calendar-check"></i> Monthly
+      </button>
+      <button class="btn-outline btn-danger" onclick="resetMonth()">
+        <i class="fas fa-trash-alt"></i> Reset
+      </button>
+    </div>
+
+    <!-- monthly report collapsible panel -->
+    <div id="monthlyReport" class="monthly-panel"></div>
+  </div>
+
+  <script>
+    (function() {
+      const weeklyBudget = 750;
+      const monthlyBudget = 3000;
+      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+      const weeks = ["Week1", "Week2", "Week3", "Week4"];
+
+      function getMonthData() {
+        return JSON.parse(localStorage.getItem("canteenMonth")) || {};
+      }
+
+      function saveMonthData(data) {
+        localStorage.setItem("canteenMonth", JSON.stringify(data));
+      }
+
+      // render current week + progress bar + summary (no edit buttons)
+      function renderWeekView() {
+        const week = document.getElementById("week").value;
+        const monthData = getMonthData();
+        const weekObj = monthData[week] || {};
+
+        let total = 0;
+        let rows = "";
+        days.forEach(day => {
+          let val = weekObj[day] || 0;
+          total += val;
+          rows += `<tr><td>${day}</td><td>₹${val}</td></tr>`;
+        });
+        document.getElementById("weekData").innerHTML = rows;
+
+        // update progress bar
+        const percent = Math.min(100, (total / weeklyBudget) * 100);
+        document.getElementById("weekProgressFill").style.width = percent + "%";
+        document.getElementById("progressPercent").innerText = Math.round(percent) + "%";
+        document.getElementById("progressSpent").innerHTML = `₹${total} spent`;
+        const remaining = weeklyBudget - total;
+        document.getElementById("progressRemaining").innerHTML = `₹${remaining} left`;
+
+        // weekly summary (identical to original)
+        const summaryDiv = document.getElementById("weeklySummary");
+        const statusClass = remaining < 0 ? 'status-danger' : 'status-safe';
+        const statusText = remaining < 0 ? '⚠ over budget' : '✓ on track';
+
+        summaryDiv.innerHTML = `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <span style="opacity:0.7;"><i class="fas fa-chart-line"></i> weekly balance</span>
+            <span class="badge">left ₹${remaining}</span>
+          </div>
+          <div class="balance-row">
+            <span>total spent</span>
+            <span style="font-weight:700; font-size:1.6rem;">₹${total}</span>
+          </div>
+          <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fas fa-flag-checkered"></i> budget ₹750</span>
+            <span class="${statusClass}"><i class="fas ${remaining<0?'fa-exclamation-triangle':'fa-check-circle'}"></i> ${statusText}</span>
+          </div>
+        `;
+      }
+
+      function renderMonthlyReport() {
+        const monthData = getMonthData();
+        let monthlyTotal = 0;
+        let html = `<h4 style="margin:0 0 1rem 0; display:flex; gap:8px;"><i class="fas fa-chart-pie"></i> monthly overview</h4>`;
+
+        weeks.forEach(week => {
+          let weekSum = 0;
+          if (monthData[week]) {
+            Object.values(monthData[week]).forEach(v => weekSum += v);
+          }
+          monthlyTotal += weekSum;
+          html += `<div class="month-item"><span>${week.replace('Week', 'Week ')}</span> <span>₹${weekSum}</span></div>`;
+        });
+
+        const remaining = monthlyBudget - monthlyTotal;
+        const safeClass = remaining >= 0 ? 'status-safe' : 'status-danger';
+        html += `
+          <div class="month-total" style="background:#123e55;">
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem;">
+              <span>total · ₹${monthlyTotal}</span>
+              <span class="${safeClass}" style="padding:0.2rem 1rem;">left ₹${remaining}</span>
+            </div>
+          </div>
+        `;
+        document.getElementById("monthlyReport").innerHTML = html;
+      }
+
+      // public functions
+      window.saveSpending = function() {
+        const week = document.getElementById("week").value;
+        const day = document.getElementById("day").value;
+        const spent = Number(document.getElementById("spent").value);
+
+        if (!spent || spent <= 0) {
+          alert("Please enter a valid amount (positive number)");
+          return;
+        }
+
+        const monthData = getMonthData();
+        if (!monthData[week]) monthData[week] = {};
+        monthData[week][day] = (monthData[week][day] || 0) + spent;
+        saveMonthData(monthData);
+
+        document.getElementById("spent").value = "";
+        renderWeekView();
+        renderMonthlyReport();
+      };
+
+      window.toggleMonthlyReport = function() {
+        const panel = document.getElementById("monthlyReport");
+        panel.classList.toggle("show");
+        if (panel.classList.contains("show")) {
+          renderMonthlyReport();
+        }
+      };
+
+      window.resetMonth = function() {
+        if (confirm("erase all canteen data for the month?")) {
+          localStorage.removeItem("canteenMonth");
+          renderWeekView();
+          renderMonthlyReport();
+          document.getElementById("monthlyReport").classList.remove("show");
+        }
+      };
+
+      document.getElementById("week").addEventListener("change", renderWeekView);
+
+      // initial render
+      renderWeekView();
+      renderMonthlyReport();
+    })();
+  </script>
+</body>
+</html>
